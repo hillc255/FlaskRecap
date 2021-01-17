@@ -1,5 +1,8 @@
+import json
+import base64
 from flask import Flask, request, jsonify, abort
 from functools import wraps
+from flask_cors import CORS, cross_origin
 
 def requires_auth(f):
     @wraps(f)
@@ -9,6 +12,7 @@ def requires_auth(f):
     return wrapper
 app = Flask(__name__)
 
+#validate token
 def get_token_auth_header():
     """Obtains the Access Token from the Authorization Header
     """
@@ -36,13 +40,18 @@ def get_token_auth_header():
 
     token = parts[1]
     return token
-			
+
+#get token payload			
 @app.route('/headers')
+@cross_origin(headers=["Content-Type", "Authorization"])
 @requires_auth
 def headers(jwt):
     # @TODO unpack the request header
-    print(jwt)
-    return 'not implemented'
+    padded = jwt + "="*divmod(len(jwt),4)[1]
+    jsondata = base64.urlsafe_b64decode(padded)
+    print (jsondata)
+    return jsondata
+    #return 'implemented'
 
 @app.route('/images')
 @requires_auth
